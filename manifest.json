@@ -1,7 +1,9 @@
 {
   "domain": "itag_bt",
   "name": "iTag BLE",
-  "version": "0.1.1",
+  "issue_tracker": "https://github.com",
+  "documentation": "https://github.com",
+  "version": "0.1.2",
   "config_flow": true,
   "codeowners": ["@you"],
   "iot_class": "local_push",
