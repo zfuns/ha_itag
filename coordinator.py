@@ -26,7 +26,7 @@ UUID_ALERT = "00002a06-0000-1000-8000-00805f9b34fb"  # Alert Level (write 0x00/0
 UUID_BATT  = "00002a19-0000-1000-8000-00805f9b34fb"  # Battery Level (read)
 
 # 厂商自定义服务/特征值 UUID（用于断线报警）
-UUID_LINK_LOSS_CHAR = "0000ffe2-0000-1000-8000-00805f9b34fb" Link Loss (write 0x01/0x00)
+UUID_LINK_LOSS_CHAR = "0000ffe2-0000-1000-8000-00805f9b34fb" #Link Loss (write 0x01/0x00)
 
 # Сигналы на шину HA
 SIGNAL_BTN  = "itag_bt_button"
