@@ -29,6 +29,16 @@ SIGNAL_BTN  = "itag_bt_button"
 SIGNAL_CONN = "itag_bt_connected"
 SIGNAL_DISC = "itag_bt_disconnected"
 
+"""
+0x00 : 关闭
+0x01 : 中
+0x02 : 高
+"""
+#开启响铃的值
+BEEP_ON_VALUE = b"\x01"
+#关闭响铃的值
+BEEP_OFF_VALUE = b"\x00"
+
 class ITagClient:
     def __init__(self, hass: HomeAssistant, mac: str) -> None:
         self.hass = hass
@@ -263,12 +273,15 @@ class ITagClient:
             self.hass.bus.async_fire, f"{SIGNAL_BTN}_{self.mac}"
         )
 
-    async def beep(self, on: bool):
+    async def beep(self, on: bool) -> None:
+        # 1. 关键：如果未连接，先连接
         if not self.client or not getattr(self.client, "is_connected", False):
             await self.connect()
+
         if not self.client or not getattr(self.client, "is_connected", False):
+            _LOGGER.error("ITag[%s] Beep 失败: 设备未连接", self.mac)
             return
-        await self._write_immediate_alert(b"\x02" if on else b"\x00")
+        await self._write_immediate_alert(BEEP_ON_VALUE if on else BEEP_OFF_VALUE)
 
     async def set_link_alert(self, enabled: bool):
         """Включить/выключить писк при потере связи (строго 0x1803:2A06, с readback)."""
