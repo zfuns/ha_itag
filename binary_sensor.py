@@ -17,6 +17,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
 class ITagButton(BinarySensorEntity):
     _attr_should_poll = False
+    _attr_translation_key = "itag_button"
 
     def __init__(self, hass: HomeAssistant, mac: str, client: ITagClient):
         self.hass = hass

@@ -16,13 +16,17 @@ _LOGGER = logging.getLogger(__name__)
 
 # Services
 SVC_IMMEDIATE_ALERT = "00001802-0000-1000-8000-00805f9b34fb"  # писк по команде
-SVC_LINK_LOSS       = "00001803-0000-1000-8000-00805f9b34fb"  # писк при потере связи
+"""SVC_LINK_LOSS       = "00001803-0000-1000-8000-00805f9b34fb"  # писк при потере связи"""
+SVC_LINK_LOSS       = "0000ffe0-0000-1000-8000-00805f9b34fb"    #新的uuid
 SVC_BATTERY         = "0000180f-0000-1000-8000-00805f9b34fb"  # справочно
 
 # Characteristics
 UUID_BTN   = "0000ffe1-0000-1000-8000-00805f9b34fb"  # notify (кнопка) — FFE0/FFE1
 UUID_ALERT = "00002a06-0000-1000-8000-00805f9b34fb"  # Alert Level (write 0x00/0x01/0x02)
 UUID_BATT  = "00002a19-0000-1000-8000-00805f9b34fb"  # Battery Level (read)
+
+# 厂商自定义服务/特征值 UUID（用于断线报警）
+UUID_LINK_LOSS_CHAR = "0000ffe2-0000-1000-8000-00805f9b34fb"
 
 # Сигналы на шину HA
 SIGNAL_BTN  = "itag_bt_button"
@@ -136,26 +140,22 @@ class ITagClient:
             return False
         payload = bytes([level_byte & 0xFF])
         try:
-            targets = await self._find_chars_in_service(SVC_LINK_LOSS, UUID_ALERT)
+            targets = await self._find_chars_in_service(SVC_LINK_LOSS, UUID_LINK_LOSS_CHAR)
             if not targets:
                 _LOGGER.debug("ITag[%s] Link Loss 2A06 not found in services", self.mac)
                 return False
             # Пишем на первую подходящую (обычно она одна)
             ch = targets[0]
             await self.client.write_gatt_char(ch, payload, response=True)  # type: ignore[attr-defined]
-            # Читаем обратно
-            read = await self.client.read_gatt_char(ch)                     # type: ignore[attr-defined]
-            ok = bool(read) and read[0] == payload[0]
-            _LOGGER.debug("ITag[%s] link-loss write %s, readback=%s ok=%s",
-                          self.mac, payload.hex(), (read.hex() if read else "None"), ok)
-            return ok
+            _LOGGER.debug("ITag[%s] link-loss write %s (Write-Only mode, no readback)", self.mac, payload.hex())
+            return True
         except Exception as e:
             _LOGGER.debug("ITag[%s] _write_link_loss_exact failed: %s", self.mac, e)
             return False
 
     async def _apply_link_alert_policy(self) -> None:
         """Применить текущую политику к 0x1803:2A06 (строго)."""
-        level = 0x02 if self._link_alert_enabled else 0x00
+        level = 0x01 if self._link_alert_enabled else 0x00
         ok = await self._write_link_loss_exact(level)
         if not ok:
             _LOGGER.debug("ITag[%s] failed to apply link-loss policy (enabled=%s)", self.mac, self._link_alert_enabled)
@@ -289,7 +289,7 @@ class ITagClient:
         if not self.client or not getattr(self.client, "is_connected", False):
             await self.connect()
         if self.client and getattr(self.client, "is_connected", False):
-            level = 0x02 if enabled else 0x00
+            level = 0x01 if enabled else 0x00
             ok = await self._write_link_loss_exact(level)
             # Если устройство не подтвердило — считаем выключенным (безопасно)
             if not ok:

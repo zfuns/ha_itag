@@ -1,0 +1,12 @@
+{
+  "entity": {
+    "binary_sensor": {
+      "itag_button": {
+        "state": {
+          "on": "触发",
+          "off": "未触发"
+        }
+      }
+    }
+  }
+}
