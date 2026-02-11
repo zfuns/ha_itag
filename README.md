@@ -1,3 +1,5 @@
+适用与这个[几块钱的iTag](https://s.click.taobao.com/n4quFln?relationId=2336279804 "几块钱的iTag")
+
 原版：https://github.com/ivspbitec/ha_itag/
 # iTag BLE — кастомная интеграция для Home Assistant
 
