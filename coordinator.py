@@ -128,7 +128,10 @@ class ITagClient:
                 # Если сервисы не распарсились — пишем по UUID характеристики
                 await self.client.write_gatt_char(UUID_ALERT, payload, response=False)  # type: ignore[attr-defined]
         except Exception as e:
-            _LOGGER.debug("ITag[%s] _write_immediate_alert failed (ignored): %s", self.mac, e)
+            _LOGGER.warning("ITag[%s] 写入失败，准备重连: %s", self.mac, e)
+            if self._client.is_connected:
+                await self._client.disconnect()
+
 
     async def _write_link_loss_exact(self, level_byte: int) -> bool:
         """
