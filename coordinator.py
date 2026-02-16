@@ -129,9 +129,11 @@ class ITagClient:
                 await self.client.write_gatt_char(UUID_ALERT, payload, response=False)  # type: ignore[attr-defined]
         except Exception as e:
             _LOGGER.warning("ITag[%s] 写入失败，准备重连: %s", self.mac, e)
-            if self._client.is_connected:
-                await self._client.disconnect()
-
+            try:
+                if self.client and getattr(self.client, "is_connected", False):
+                    await self.client.disconnect()
+            except Exception:
+                pass
 
     async def _write_link_loss_exact(self, level_byte: int) -> bool:
         """
